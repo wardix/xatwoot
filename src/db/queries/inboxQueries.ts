@@ -74,6 +74,16 @@ export async function findInboxById(id: number, account_id: number): Promise<Inb
   return (rows[0] as Inbox) ?? null;
 }
 
+/** Public variant — finds inbox by id alone (no account_id required). */
+export async function findInboxByIdPublic(id: number): Promise<Inbox | null> {
+  const rows = await db.unsafe(
+    `SELECT * FROM inboxes WHERE id = $1 LIMIT 1`,
+    [id]
+  );
+  return (rows[0] as Inbox) ?? null;
+}
+
+
 export async function updateInbox(
   id: number,
   account_id: number,

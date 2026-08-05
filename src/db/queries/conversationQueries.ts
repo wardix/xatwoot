@@ -50,7 +50,7 @@ export async function createConversation(input: CreateConversationInput): Promis
     contact_id,
     assignee_id = null,
     status = "open",
-    priority = "normal",
+    priority = "low",
     subject = null,
   } = input;
 
