@@ -13,6 +13,7 @@ import {
   type Conversation,
 } from "@/db/queries/conversationQueries.ts";
 import { authMiddleware } from "@/middleware/auth.ts";
+import { searchConversations } from "@/db/queries/searchQueries.ts";
 import type { User } from "@/db/queries/userQueries.ts";
 
 type ConvVariables = { user: User; userId: number; accountId: number };
@@ -46,6 +47,22 @@ conversationRoutes.post(
     return c.json(conversation, 201);
   }
 );
+
+// GET /api/v1/conversations/search?q=... — full-text search across subject and messages
+conversationRoutes.get("/search", async (c) => {
+  const accountId = c.get("accountId");
+  const q = c.req.query("q");
+  if (!q || !q.trim()) {
+    return c.json({ error: "Validation Failed", details: { q: ["Query parameter 'q' is required"] } }, 422);
+  }
+
+  const page = Math.max(1, Number(c.req.query("page") ?? 1));
+  const perPage = 20;
+  const offset = (page - 1) * perPage;
+
+  const { data, total } = await searchConversations(accountId, q, perPage, offset);
+  return c.json({ data, meta: { total, page, per_page: perPage } });
+});
 
 // GET /api/v1/conversations
 conversationRoutes.get("/", async (c) => {
