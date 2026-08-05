@@ -41,6 +41,9 @@ export function ChatArea() {
     enabled: !!token && !!selectedId,
   } as any);
 
+  // Collision detection — warning if another agent is viewing/typing
+  const collisionAgent = typingUsers.find((name) => name !== user?.name && name !== user?.email);
+
   // WebSocket — subscribe to live events
   const { isConnected } = useWebSocket({
     token: token ?? "",
@@ -50,10 +53,10 @@ export function ChatArea() {
       if (event === "message.created" && data?.conversation_id === selectedId) {
         appendMessage(selectedId, data as Message);
       } else if (event === "typing_start" && data?.conversation_id === selectedId) {
-        const name = String(data.user_name ?? data.user_id ?? "Agent");
+        const name = String(data.user_name ?? data.user_id ?? "Another Agent");
         setTyping(selectedId, [...new Set([...typingUsers, name])]);
       } else if (event === "typing_stop" && data?.conversation_id === selectedId) {
-        const name = String(data.user_name ?? data.user_id ?? "Agent");
+        const name = String(data.user_name ?? data.user_id ?? "Another Agent");
         setTyping(selectedId, typingUsers.filter((u) => u !== name));
       }
     },
@@ -170,6 +173,13 @@ export function ChatArea() {
           {isConnected ? "Live" : "Connecting…"}
         </div>
       </div>
+
+      {/* Collision Warning Banner */}
+      {collisionAgent && (
+        <div className="chat-area__collision-banner">
+          ⚠️ <strong>Agent Collision Warning:</strong> Agent {collisionAgent} is also viewing/typing in this conversation.
+        </div>
+      )}
 
       {/* Messages */}
       <div className="chat-area__messages">
