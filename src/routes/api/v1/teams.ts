@@ -109,4 +109,25 @@ teamRoutes.post(
   }
 );
 
+// PUT /api/v1/teams/:id/auto-assign — toggle auto-assignment setting
+teamRoutes.put("/:id/auto-assign", async (c) => {
+  const accountId = c.get("accountId");
+  const teamId = Number(c.req.param("id"));
+  if (isNaN(teamId)) {
+    return c.json({ error: "Not Found", message: "Team not found" }, 404);
+  }
+
+  let body: any;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const allowAutoAssign = Boolean(body.allow_auto_assign);
+  const { toggleTeamAutoAssign } = await import("@/db/queries/assignmentQueries.ts");
+  const result = await toggleTeamAutoAssign(teamId, accountId, allowAutoAssign);
+  return c.json(result, 200);
+});
+
 export { teamRoutes };
