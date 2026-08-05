@@ -6,10 +6,15 @@ import {
   findAccountByEmail,
   findAccountById,
   listAccounts,
+  updateAccountBranding,
 } from "@/db/queries/accountQueries.ts";
 import { createAccountSchema } from "@/schemas/accountSchema.ts";
+import { updateBrandingSchema } from "@/schemas/brandingSchema.ts";
+import { authMiddleware } from "@/middleware/auth.ts";
+import type { User } from "@/db/queries/userQueries.ts";
 
-const accountRoutes = new Hono();
+type AccountVariables = { user: User; userId: number; accountId: number };
+const accountRoutes = new Hono<{ Variables: AccountVariables }>();
 
 // POST /api/v1/accounts - Create new account
 accountRoutes.post(
@@ -105,5 +110,44 @@ accountRoutes.get("/:id", async (c) => {
     updated_at: account.updated_at,
   });
 });
+
+// PUT /api/v1/accounts/:id/branding - Update account branding configuration (protected)
+accountRoutes.put(
+  "/:id/branding",
+  authMiddleware,
+  zValidator("json", updateBrandingSchema, (result, c) => {
+    if (!result.success) {
+      const fieldErrors: Record<string, string[]> = {};
+      for (const issue of result.error.issues) {
+        const key = issue.path.map(String).join(".") || "_root";
+        if (!fieldErrors[key]) fieldErrors[key] = [];
+        fieldErrors[key].push(issue.message);
+      }
+      return c.json({ error: "Validation Failed", details: fieldErrors }, 422);
+    }
+  }),
+  async (c) => {
+    const accountIdParam = Number(c.req.param("id"));
+    const userAccountId = Number(c.get("accountId"));
+
+    if (isNaN(accountIdParam) || accountIdParam !== userAccountId) {
+      return c.json({ error: "Unauthorized", message: "Forbidden account access" }, 403);
+    }
+
+    const body = c.req.valid("json");
+    const account = await updateAccountBranding(userAccountId, body);
+
+    if (!account) {
+      return c.json({ error: "Not Found", message: "Account not found" }, 404);
+    }
+
+    return c.json({
+      id: account.id,
+      name: account.name,
+      branding: account.branding,
+      updated_at: account.updated_at,
+    });
+  }
+);
 
 export { accountRoutes };
