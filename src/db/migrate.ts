@@ -160,6 +160,23 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_conv_labels_label ON conversation_labels(label_id)`);
   console.log("✅ conversation_labels table ready");
 
+  // attachments table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS attachments (
+      id BIGSERIAL PRIMARY KEY,
+      message_id BIGINT REFERENCES messages(id) ON DELETE CASCADE,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      url TEXT NOT NULL,
+      file_type VARCHAR(50) DEFAULT 'file',
+      mime_type VARCHAR(100),
+      file_size BIGINT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_attachments_message ON attachments(message_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_attachments_account ON attachments(account_id)`);
+  console.log("✅ attachments table ready");
+
   console.log("✅ All migrations completed");
   await db.end?.();
 }
