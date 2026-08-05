@@ -132,6 +132,33 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at)`);
   console.log("✅ messages table ready");
 
+  // labels table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS labels (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,
+      color VARCHAR(7),
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(account_id, name)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_labels_account ON labels(account_id)`);
+  console.log("✅ labels table ready");
+
+  // conversation_labels table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS conversation_labels (
+      conversation_id BIGINT REFERENCES conversations(id) ON DELETE CASCADE,
+      label_id BIGINT REFERENCES labels(id) ON DELETE CASCADE,
+      PRIMARY KEY (conversation_id, label_id),
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_conv_labels_label ON conversation_labels(label_id)`);
+  console.log("✅ conversation_labels table ready");
+
   console.log("✅ All migrations completed");
   await db.end?.();
 }
