@@ -7,7 +7,7 @@ async function migrate() {
   await db.unsafe(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
   await db.unsafe(`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
 
-  // Create accounts table
+  // accounts table
   await db.unsafe(`
     CREATE TABLE IF NOT EXISTS accounts (
       id BIGSERIAL PRIMARY KEY,
@@ -23,16 +23,33 @@ async function migrate() {
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_accounts_email ON accounts(email)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_accounts_domain ON accounts(domain)`);
+  console.log("✅ accounts table ready");
 
-  // Create indexes
-  await db.unsafe(
-    `CREATE INDEX IF NOT EXISTS idx_accounts_email ON accounts(email)`
-  );
-  await db.unsafe(
-    `CREATE INDEX IF NOT EXISTS idx_accounts_domain ON accounts(domain)`
-  );
+  // users table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS users (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      password_hash VARCHAR(255) NOT NULL,
+      name VARCHAR(255),
+      role VARCHAR(20) DEFAULT 'agent' CHECK (role IN ('admin', 'agent', 'viewer')),
+      availability VARCHAR(10) DEFAULT 'offline' CHECK (availability IN ('online', 'away', 'offline')),
+      otp_secret VARCHAR(255),
+      provider VARCHAR(50),
+      uid VARCHAR(255),
+      pubsub_token VARCHAR(255),
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_users_account ON users(account_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+  console.log("✅ users table ready");
 
-  console.log("✅ Migration completed: accounts table created");
+  console.log("✅ All migrations completed");
   await db.end?.();
 }
 
