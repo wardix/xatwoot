@@ -116,7 +116,7 @@ async function migrate() {
     CREATE TABLE IF NOT EXISTS messages (
       id BIGSERIAL PRIMARY KEY,
       conversation_id BIGINT REFERENCES conversations(id) ON DELETE CASCADE,
-      sender_type VARCHAR(10) CHECK (sender_type IN ('user', 'contact')),
+      sender_type VARCHAR(10) CHECK (sender_type IN ('user', 'contact', 'bot')),
       sender_id BIGINT,
       body TEXT,
       message_type VARCHAR(10) DEFAULT 'text' CHECK (message_type IN ('text', 'image', 'file', 'audio')),
@@ -241,6 +241,20 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id)`);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action)`);
   console.log("✅ audit_logs table ready");
+
+  // push_subscriptions table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id BIGSERIAL PRIMARY KEY,
+      user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+      endpoint TEXT NOT NULL,
+      keys JSONB NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(user_id, endpoint)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id)`);
+  console.log("✅ push_subscriptions table ready");
 
   console.log("✅ All migrations completed");
   await db.end?.();
