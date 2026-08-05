@@ -210,6 +210,21 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_team_memberships_user ON team_memberships(user_id)`);
   console.log("✅ team_memberships table ready");
 
+  // canned_responses table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS canned_responses (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      shortcut VARCHAR(255) NOT NULL,
+      content TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(account_id, shortcut)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_canned_responses_account ON canned_responses(account_id)`);
+  console.log("✅ canned_responses table ready");
+
   console.log("✅ All migrations completed");
   await db.end?.();
 }
