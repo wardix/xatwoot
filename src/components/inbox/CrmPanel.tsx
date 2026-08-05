@@ -62,6 +62,30 @@ export function CrmPanel() {
         <div className="crm-actions">
           <button className="crm-btn crm-btn--resolve">✓ Resolve</button>
           <button className="crm-btn crm-btn--snooze">💤 Snooze</button>
+          <button
+            className="crm-btn"
+            style={{ backgroundColor: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "1px solid rgba(59,130,246,0.3)" }}
+            onClick={async () => {
+              const summary = prompt("Jira Issue Summary:", conv.subject ?? "Support Ticket");
+              if (!summary) return;
+              try {
+                const token = localStorage.getItem("xatwoot_token");
+                const res = await fetch("http://localhost:3000/api/v1/integrations/jira/ticket", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ conversation_id: conv.id, summary }),
+                });
+                if (res.ok) {
+                  const data = await res.json();
+                  alert(`Jira Issue Created: ${data.issueKey}\n${data.issueUrl}`);
+                }
+              } catch {
+                alert("Failed to create Jira issue.");
+              }
+            }}
+          >
+            📋 Create Jira Issue
+          </button>
         </div>
       </section>
     </div>
