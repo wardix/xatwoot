@@ -47,3 +47,38 @@ export function broadcastToAccount(accountId: number, message: WSMessage): void 
     }
   }
 }
+
+// Map conversationId -> Set of userIds currently typing
+const typingState = new Map<number, Set<number>>();
+
+export function setTyping(conversationId: number, userId: number, isTyping: boolean): void {
+  if (isTyping) {
+    let users = typingState.get(conversationId);
+    if (!users) {
+      users = new Set();
+      typingState.set(conversationId, users);
+    }
+    users.add(userId);
+  } else {
+    const users = typingState.get(conversationId);
+    if (users) {
+      users.delete(userId);
+      if (users.size === 0) {
+        typingState.delete(conversationId);
+      }
+    }
+  }
+}
+
+export function getTypingUsers(conversationId: number): number[] {
+  return Array.from(typingState.get(conversationId) ?? []);
+}
+
+export function clearTypingForUser(userId: number): void {
+  for (const [conversationId, users] of typingState) {
+    users.delete(userId);
+    if (users.size === 0) {
+      typingState.delete(conversationId);
+    }
+  }
+}
