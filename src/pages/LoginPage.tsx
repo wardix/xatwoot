@@ -125,6 +125,58 @@ export function LoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
+        <div style={{ display: "flex", alignItems: "center", margin: "20px 0", color: "#9ca3af" }}>
+          <div style={{ flex: 1, height: "1px", backgroundColor: "#e5e7eb" }} />
+          <span style={{ padding: "0 10px", fontSize: "12px" }}>OR</span>
+          <div style={{ flex: 1, height: "1px", backgroundColor: "#e5e7eb" }} />
+        </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            setError("");
+            setLoading(true);
+            try {
+              const res = await fetch("/api/v1/auth/sso/google", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email: `user_${Date.now()}@google-workspace.com`,
+                  name: "Google SSO Agent",
+                }),
+              });
+              if (res.ok) {
+                const data = await res.json();
+                setAuth(data.token, data.user);
+                navigate("/dashboard");
+              } else {
+                setError("Google SSO Login Failed");
+              }
+            } catch {
+              setError("Network error during Google SSO");
+            } finally {
+              setLoading(false);
+            }
+          }}
+          style={{
+            width: "100%",
+            backgroundColor: "#ffffff",
+            color: "#374151",
+            border: "1px solid #d1d5db",
+            borderRadius: "6px",
+            padding: "10px",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+          }}
+        >
+          <span>🌐</span> Sign in with Google
+        </button>
       </div>
     </div>
   );

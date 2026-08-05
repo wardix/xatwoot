@@ -5,11 +5,15 @@ export interface User {
   account_id: number;
   email: string;
   password_hash: string;
-  name: string | null;
+  name?: string;
   role: "admin" | "agent" | "viewer";
-  availability: string;
-  created_at: Date;
-  updated_at: Date;
+  availability: "online" | "away" | "offline";
+  otp_secret?: string;
+  provider?: string;
+  uid?: string;
+  pubsub_token?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CreateUserInput {
