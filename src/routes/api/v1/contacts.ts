@@ -10,6 +10,7 @@ import {
   findContactByEmail,
   updateContact,
 } from "@/db/queries/contactQueries.ts";
+import { anonymizeContact } from "@/db/queries/gdprQueries.ts";
 import { authMiddleware } from "@/middleware/auth.ts";
 import type { User } from "@/db/queries/userQueries.ts";
 
@@ -109,5 +110,21 @@ contactRoutes.put(
     return c.json(contact);
   }
 );
+
+// DELETE /api/v1/contacts/:id - Soft delete / anonymize PII for GDPR compliance
+contactRoutes.delete("/:id", async (c) => {
+  const accountId = c.get("accountId");
+  const id = Number(c.req.param("id"));
+  if (isNaN(id)) {
+    return c.json({ error: "Not Found", message: "Contact not found" }, 404);
+  }
+
+  const success = await anonymizeContact(id, accountId);
+  if (!success) {
+    return c.json({ error: "Not Found", message: "Contact not found" }, 404);
+  }
+
+  return c.json({ message: "Contact anonymized successfully" }, 200);
+});
 
 export { contactRoutes };

@@ -14,6 +14,7 @@ import { offlineMessageRoutes } from "./offlineMessages.ts";
 import { cannedResponseRoutes } from "./cannedResponses.ts";
 import { auditLogRoutes } from "./auditLogs.ts";
 import { analyticsRoutes } from "./analytics.ts";
+import { gdprRoutes } from "./gdpr.ts";
 import { auditLoggerMiddleware } from "@/middleware/auditLogger.ts";
 
 const v1Routes = new Hono();
@@ -37,5 +38,6 @@ v1Routes.route("/offline-messages", offlineMessageRoutes);
 v1Routes.route("/canned-responses", cannedResponseRoutes);
 v1Routes.route("/audit-logs", auditLogRoutes);
 v1Routes.route("/analytics", analyticsRoutes);
+v1Routes.route("/gdpr", gdprRoutes);
 
 export { v1Routes };
