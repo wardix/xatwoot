@@ -12,6 +12,13 @@ app.use("*", cors());
 // Health check
 app.get("/health", (c) => c.json({ status: "ok", service: "xatwoot" }));
 
+import { swaggerUI } from "@hono/swagger-ui";
+import { openApiSpec } from "./openapi/spec.ts";
+
+// API Documentation
+app.get("/api/docs/openapi.json", (c) => c.json(openApiSpec));
+app.get("/api/docs", swaggerUI({ url: "/api/docs/openapi.json" }));
+
 // API Routes
 app.route("/api/v1", v1Routes);
 
