@@ -23,6 +23,13 @@ Default to using Bun instead of Node.js.
 
 Use `bun test` to run tests.
 
+### Test-Driven Development (TDD) Requirement
+**CRITICAL INSTRUCTION FOR ALL AGENTS:** You MUST follow Test-Driven Development (TDD) when working on any issue or feature:
+1. **Red**: Before writing any implementation code, write the tests first (in `tests/**/*.test.ts`). Run the test and ensure it fails.
+2. **Green**: Write the minimum amount of code required to make the test pass.
+3. **Refactor**: Clean up the code while ensuring the test stays green.
+Do not skip writing tests. Do not write implementation code before having a failing test.
+
 ```ts#index.test.ts
 import { test, expect } from "bun:test";
 
