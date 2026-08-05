@@ -13,6 +13,7 @@ import { typingRoutes } from "./typing.ts";
 import { offlineMessageRoutes } from "./offlineMessages.ts";
 import { cannedResponseRoutes } from "./cannedResponses.ts";
 import { auditLogRoutes } from "./auditLogs.ts";
+import { analyticsRoutes } from "./analytics.ts";
 import { auditLoggerMiddleware } from "@/middleware/auditLogger.ts";
 
 const v1Routes = new Hono();
@@ -35,5 +36,6 @@ v1Routes.route("/conversations/:id/typing", typingRoutes);
 v1Routes.route("/offline-messages", offlineMessageRoutes);
 v1Routes.route("/canned-responses", cannedResponseRoutes);
 v1Routes.route("/audit-logs", auditLogRoutes);
+v1Routes.route("/analytics", analyticsRoutes);
 
 export { v1Routes };
