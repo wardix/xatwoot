@@ -366,3 +366,62 @@ body { background: #0f1117; color: #e2e8f0; }
 .crm-btn--resolve:hover { background: rgba(16,185,129,0.25); }
 .crm-btn--snooze { background: rgba(139,92,246,0.15); color: var(--purple); border: 1px solid rgba(139,92,246,0.3); }
 .crm-btn--snooze:hover { background: rgba(139,92,246,0.25); }
+
+/* ── Mobile PWA & Responsive Media Queries (VS-FRONTEND-005) ─ */
+@media (max-width: 1024px) {
+  .inbox-layout {
+    grid-template-columns: 280px 1fr;
+  }
+  .inbox-layout__crm {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-sidebar {
+    width: 100%;
+    height: 60px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    position: fixed;
+    top: 0; left: 0; z-index: 100;
+  }
+  .app-sidebar__brand { border-bottom: none; padding: 0; }
+  .app-sidebar__nav { flex-direction: row; padding: 0; gap: 4px; }
+  .app-sidebar__footer { display: none; }
+
+  main {
+    margin-left: 0 !important;
+    margin-top: 60px;
+    height: calc(100vh - 60px) !important;
+  }
+
+  .inbox-layout {
+    grid-template-columns: 1fr;
+    height: calc(100vh - 60px);
+  }
+  .inbox-layout__crm { display: none; }
+
+  /* Mobile Touch Targets — Min 44px height */
+  .chat-area__send-btn,
+  .chat-area__ai-btn,
+  .nav-link,
+  .btn-logout,
+  .crm-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chat-area__input-bar {
+    padding: 10px;
+    gap: 6px;
+  }
+  .chat-area__input {
+    min-height: 44px;
+  }
+}
+
