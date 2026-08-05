@@ -49,6 +49,23 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
   console.log("✅ users table ready");
 
+  // inboxes table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS inboxes (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,
+      channel_type VARCHAR(50) CHECK (channel_type IN ('web_widget','email','whatsapp','facebook','telegram')),
+      integration_config JSONB DEFAULT '{}',
+      enabled BOOLEAN DEFAULT true,
+      greeting_enabled BOOLEAN DEFAULT false,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_inboxes_account ON inboxes(account_id)`);
+  console.log("✅ inboxes table ready");
+
   console.log("✅ All migrations completed");
   await db.end?.();
 }
