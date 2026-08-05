@@ -15,6 +15,7 @@ import { cannedResponseRoutes } from "./cannedResponses.ts";
 import { auditLogRoutes } from "./auditLogs.ts";
 import { analyticsRoutes } from "./analytics.ts";
 import { gdprRoutes } from "./gdpr.ts";
+import { webhookRoutes } from "./webhooks.ts";
 import { auditLoggerMiddleware } from "@/middleware/auditLogger.ts";
 
 const v1Routes = new Hono();
@@ -39,5 +40,6 @@ v1Routes.route("/canned-responses", cannedResponseRoutes);
 v1Routes.route("/audit-logs", auditLogRoutes);
 v1Routes.route("/analytics", analyticsRoutes);
 v1Routes.route("/gdpr", gdprRoutes);
+v1Routes.route("/webhooks", webhookRoutes);
 
 export { v1Routes };
