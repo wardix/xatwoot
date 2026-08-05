@@ -11,9 +11,12 @@ services:
       - PORT=3000
       - NODE_ENV=production
       - DATABASE_URL=postgres://xatwoot:xatwootpassword@db:5432/xatwoot_db
+      - REDIS_URL=redis://redis:6379
       - JWT_SECRET=xatwoot_production_secret_key_change_me
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
 
@@ -34,5 +37,19 @@ services:
       retries: 5
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  redis_data:
