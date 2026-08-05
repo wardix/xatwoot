@@ -177,6 +177,39 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_attachments_account ON attachments(account_id)`);
   console.log("✅ attachments table ready");
 
+  // teams table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS teams (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      allow_auto_assign BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(account_id, name)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_teams_account ON teams(account_id)`);
+  console.log("✅ teams table ready");
+
+  // team_memberships table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS team_memberships (
+      id BIGSERIAL PRIMARY KEY,
+      team_id BIGINT REFERENCES teams(id) ON DELETE CASCADE,
+      user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      role VARCHAR(20) DEFAULT 'member' CHECK (role IN ('admin', 'member')),
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(team_id, user_id)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_team_memberships_team ON team_memberships(team_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_team_memberships_user ON team_memberships(user_id)`);
+  console.log("✅ team_memberships table ready");
+
   console.log("✅ All migrations completed");
   await db.end?.();
 }
