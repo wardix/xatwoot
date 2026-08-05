@@ -254,7 +254,23 @@ async function migrate() {
     )
   `);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id)`);
-  console.log("✅ push_subscriptions table ready");
+  // automation_rules table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS automation_rules (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      event_type VARCHAR(50) DEFAULT 'conversation_created' CHECK (event_type IN ('conversation_created', 'message_created')),
+      conditions JSONB NOT NULL DEFAULT '[]',
+      actions JSONB NOT NULL DEFAULT '[]',
+      active BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_automation_rules_account ON automation_rules(account_id)`);
+  console.log("✅ automation_rules table ready");
 
   console.log("✅ All migrations completed");
   await db.end?.();
