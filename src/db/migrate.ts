@@ -330,7 +330,23 @@ async function migrate() {
   `);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_customer_events_account ON customer_events(account_id)`);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_customer_events_contact ON customer_events(contact_id)`);
-  console.log("✅ customer_events table ready");
+  // sla_policies table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS sla_policies (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      first_response_time_threshold_minutes INT DEFAULT 15,
+      resolution_time_threshold_minutes INT DEFAULT 120,
+      priority VARCHAR(20) DEFAULT 'urgent',
+      active BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_sla_policies_account ON sla_policies(account_id)`);
+  console.log("✅ sla_policies table ready");
 
   console.log("✅ All migrations completed");
   await db.end?.();

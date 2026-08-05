@@ -22,6 +22,7 @@ import { automationRoutes } from "./automation.ts";
 import { integrationRoutes } from "./integrations.ts";
 import { rbacRoutes } from "./roles.ts";
 import { trackingRoutes, crmTrackingRoutes } from "./tracking.ts";
+import { slaRoutes } from "./sla.ts";
 import { auditLoggerMiddleware } from "@/middleware/auditLogger.ts";
 
 const v1Routes = new Hono();
@@ -54,5 +55,6 @@ v1Routes.route("/integrations", integrationRoutes);
 v1Routes.route("/roles", rbacRoutes);
 v1Routes.route("/tracking", trackingRoutes);
 v1Routes.route("/tracking", crmTrackingRoutes);
+v1Routes.route("/sla", slaRoutes);
 
 export { v1Routes };
