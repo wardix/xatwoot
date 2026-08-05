@@ -270,7 +270,32 @@ async function migrate() {
     )
   `);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_automation_rules_account ON automation_rules(account_id)`);
-  console.log("✅ automation_rules table ready");
+  // roles table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS roles (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      name VARCHAR(100) NOT NULL,
+      description TEXT,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(account_id, name)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_roles_account ON roles(account_id)`);
+
+  // role_permissions table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS role_permissions (
+      id BIGSERIAL PRIMARY KEY,
+      role_id BIGINT REFERENCES roles(id) ON DELETE CASCADE,
+      permission VARCHAR(100) NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(role_id, permission)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role_id)`);
+  console.log("✅ roles & role_permissions tables ready");
 
   console.log("✅ All migrations completed");
   await db.end?.();

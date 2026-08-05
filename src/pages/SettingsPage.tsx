@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/useAuthStore.ts";
 import { AccountBrandingSettings } from "../components/AccountBrandingSettings.tsx";
 import { WorkflowAutomationSettings } from "../components/WorkflowAutomationSettings.tsx";
 import { AppIntegrationsSettings } from "../components/AppIntegrationsSettings.tsx";
+import { RolesPermissionsSettings } from "../components/RolesPermissionsSettings.tsx";
 
 export function SettingsPage() {
   const token = useAuthStore((state) => state.token);
@@ -23,6 +24,7 @@ export function SettingsPage() {
           />
           <WorkflowAutomationSettings />
           <AppIntegrationsSettings />
+          <RolesPermissionsSettings />
         </div>
       ) : (
         <div>Please log in to view account settings.</div>
