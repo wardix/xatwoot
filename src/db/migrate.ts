@@ -66,6 +66,26 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_inboxes_account ON inboxes(account_id)`);
   console.log("✅ inboxes table ready");
 
+  // contacts table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS contacts (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      name VARCHAR(255),
+      email VARCHAR(255),
+      phone_number VARCHAR(50),
+      avatar_url TEXT,
+      additional_attributes JSONB DEFAULT '{}',
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE (account_id, email),
+      UNIQUE (account_id, phone_number)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_contacts_account ON contacts(account_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_contacts_email_trgm ON contacts USING gin (email gin_trgm_ops)`);
+  console.log("✅ contacts table ready");
+
   console.log("✅ All migrations completed");
   await db.end?.();
 }
