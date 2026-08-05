@@ -4,6 +4,7 @@ import { AccountBrandingSettings } from "../components/AccountBrandingSettings.t
 import { WorkflowAutomationSettings } from "../components/WorkflowAutomationSettings.tsx";
 import { AppIntegrationsSettings } from "../components/AppIntegrationsSettings.tsx";
 import { RolesPermissionsSettings } from "../components/RolesPermissionsSettings.tsx";
+import { LanguageSelector } from "../components/LanguageSelector.tsx";
 
 export function SettingsPage() {
   const token = useAuthStore((state) => state.token);
@@ -17,6 +18,7 @@ export function SettingsPage() {
 
       {token && user?.account_id ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+          <LanguageSelector />
           <AccountBrandingSettings
             accountId={user.account_id}
             token={token}

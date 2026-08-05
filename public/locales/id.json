@@ -1,0 +1,19 @@
+{
+  "welcome": "Selamat datang kembali",
+  "overview": "Ringkasan percakapan, pesan, dan performa tim.",
+  "inbox": "Kotak Masuk Agen",
+  "dashboard": "Dasbor",
+  "settings": "Pengaturan",
+  "logout": "Keluar",
+  "conversations": "Percakapan",
+  "select_conversation": "Pilih percakapan",
+  "select_conversation_desc": "Pilih percakapan dari daftar untuk mulai membalas.",
+  "type_reply": "Ketik balasan Anda...",
+  "send": "Kirim",
+  "suggest_reply": "Saran Balasan",
+  "visitor": "Pengunjung",
+  "quick_actions": "Aksi Cepat",
+  "resolve": "Selesaikan",
+  "snooze": "Tunda",
+  "language": "Bahasa"
+}

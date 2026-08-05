@@ -1,0 +1,19 @@
+{
+  "welcome": "Bienvenido de nuevo",
+  "overview": "Resumen de conversaciones, mensajes y rendimiento del equipo.",
+  "inbox": "Bandeja de Agente",
+  "dashboard": "Panel de Control",
+  "settings": "Configuración",
+  "logout": "Cerrar sesión",
+  "conversations": "Conversaciones",
+  "select_conversation": "Selecciona una conversación",
+  "select_conversation_desc": "Elige una conversación de la lista para comenzar a responder.",
+  "type_reply": "Escribe tu respuesta...",
+  "send": "Enviar",
+  "suggest_reply": "Sugerir respuesta",
+  "visitor": "Visitante",
+  "quick_actions": "Acciones rápidas",
+  "resolve": "Resolver",
+  "snooze": "Posponer",
+  "language": "Idioma"
+}
