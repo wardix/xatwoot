@@ -6,6 +6,7 @@ import {
   createMessage,
   listMessagesByConversation,
 } from "@/db/queries/messageQueries.ts";
+import { broadcastToAccount } from "@/lib/websocket.ts";
 import { findConversationById } from "@/db/queries/conversationQueries.ts";
 import { authMiddleware } from "@/middleware/auth.ts";
 import type { User } from "@/db/queries/userQueries.ts";
@@ -64,6 +65,12 @@ messageRoutes.post(
       conversation_id: targetConvId,
       sender_type,
       sender_id,
+    });
+
+    // Broadcast new message via WebSocket to account clients
+    broadcastToAccount(accountId, {
+      event: "message.created",
+      data: message as unknown as Record<string, unknown>,
     });
 
     return c.json(message, 201);
