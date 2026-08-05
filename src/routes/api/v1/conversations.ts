@@ -70,6 +70,7 @@ conversationRoutes.get("/", async (c) => {
   const inboxIdStr = c.req.query("inbox_id");
   const statusStr = c.req.query("status");
   const assigneeIdStr = c.req.query("assignee_id");
+  const label = c.req.query("label");
   const page = Math.max(1, Number(c.req.query("page") ?? 1));
   const perPage = 20;
   const offset = (page - 1) * perPage;
@@ -82,6 +83,7 @@ conversationRoutes.get("/", async (c) => {
     inbox_id,
     status,
     assignee_id,
+    label,
     limit: perPage,
     offset,
   });
