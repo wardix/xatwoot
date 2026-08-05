@@ -6,6 +6,10 @@ import {
   createMessage,
   listMessagesByConversation,
 } from "@/db/queries/messageQueries.ts";
+import {
+  linkAttachmentsToMessage,
+  listAttachmentsByMessage,
+} from "@/db/queries/attachmentQueries.ts";
 import { broadcastToAccount } from "@/lib/websocket.ts";
 import { findConversationById } from "@/db/queries/conversationQueries.ts";
 import { authMiddleware } from "@/middleware/auth.ts";
@@ -59,21 +63,30 @@ messageRoutes.post(
     const sender_type = body.sender_type ?? "user";
     const sender_id = body.sender_id ?? (sender_type === "user" ? userId : conversation.contact_id);
 
+    const { attachments: attachmentsInput, ...messageBody } = body;
+
     const message = await createMessage({
-      ...body,
+      ...messageBody,
       account_id: accountId,
       conversation_id: targetConvId,
       sender_type,
       sender_id,
     });
 
+    let attachmentsList: any[] = [];
+    if (attachmentsInput && attachmentsInput.length > 0) {
+      attachmentsList = await linkAttachmentsToMessage(message.id, accountId, attachmentsInput);
+    }
+
+    const messageWithAttachments = { ...message, attachments: attachmentsList };
+
     // Broadcast new message via WebSocket to account clients
     broadcastToAccount(accountId, {
       event: "message.created",
-      data: message as unknown as Record<string, unknown>,
+      data: messageWithAttachments as unknown as Record<string, unknown>,
     });
 
-    return c.json(message, 201);
+    return c.json(messageWithAttachments, 201);
   }
 );
 
@@ -94,7 +107,14 @@ messageRoutes.get("/", async (c) => {
   }
 
   const messages = await listMessagesByConversation(targetConvId, accountId);
-  return c.json(messages, 200);
+  const messagesWithAttachments = await Promise.all(
+    messages.map(async (msg) => {
+      const atts = await listAttachmentsByMessage(msg.id, accountId);
+      return { ...msg, attachments: atts };
+    })
+  );
+
+  return c.json(messagesWithAttachments, 200);
 });
 
 export { messageRoutes };

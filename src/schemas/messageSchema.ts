@@ -14,6 +14,16 @@ export const createMessageSchema = z.object({
   private: z.boolean().default(false),
   media_url: z.string().url().optional(),
   external_id: z.string().max(255).optional(),
+  attachments: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        file_type: z.string().optional(),
+        mime_type: z.string().optional(),
+        file_size: z.number().optional(),
+      })
+    )
+    .optional(),
 });
 
 export type CreateMessageDto = z.infer<typeof createMessageSchema>;
