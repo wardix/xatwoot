@@ -316,7 +316,21 @@ async function migrate() {
     )
   `);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_kb_articles_account ON knowledge_base_articles(account_id)`);
-  console.log("✅ knowledge_base_articles table ready");
+  // customer_events table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS customer_events (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      contact_id BIGINT REFERENCES contacts(id) ON DELETE CASCADE,
+      event_type VARCHAR(50) NOT NULL,
+      url TEXT,
+      metadata JSONB DEFAULT '{}',
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_customer_events_account ON customer_events(account_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_customer_events_contact ON customer_events(contact_id)`);
+  console.log("✅ customer_events table ready");
 
   console.log("✅ All migrations completed");
   await db.end?.();
