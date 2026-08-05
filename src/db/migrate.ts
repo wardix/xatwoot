@@ -18,6 +18,7 @@ async function migrate() {
       support_email VARCHAR(255),
       locale VARCHAR(10) DEFAULT 'en',
       settings JSONB DEFAULT '{}',
+      branding JSONB DEFAULT '{}',
       limits JSONB DEFAULT '{"conversations": 1000}',
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()

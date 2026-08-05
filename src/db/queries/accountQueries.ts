@@ -9,6 +9,7 @@ export interface Account {
   support_email: string | null;
   locale: string;
   settings: Record<string, unknown>;
+  branding: Record<string, unknown>;
   limits: Record<string, unknown>;
   created_at: Date;
   updated_at: Date;
@@ -88,4 +89,29 @@ export async function listAccounts(
     data: rows as Account[],
     total: (countRows[0] as { total: number }).total,
   };
+}
+
+export async function updateAccountBranding(
+  id: number,
+  branding: Record<string, unknown>
+): Promise<Account | null> {
+  const rows = await db.unsafe(
+    `UPDATE accounts
+     SET branding = $1::jsonb,
+         updated_at = NOW()
+     WHERE id = $2
+     RETURNING *`,
+    [JSON.stringify(branding), id]
+  );
+  const account = rows[0] as any;
+  if (account) {
+    if (typeof account.branding === "string") {
+      try {
+        account.branding = JSON.parse(account.branding);
+      } catch {
+        account.branding = {};
+      }
+    }
+  }
+  return (account as Account) ?? null;
 }
