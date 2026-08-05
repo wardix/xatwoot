@@ -8,10 +8,12 @@
     "start": "bun run src/index.ts",
     "build:widget": "vite build --config vite.config.widget.ts",
     "test": "bun test",
+    "test:e2e": "playwright test",
     "migrate": "bun run src/db/migrate.ts",
     "seed": "bun run src/db/seed.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/bun": "latest",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.1.2",
