@@ -11,6 +11,7 @@ import { attachmentRoutes } from "./attachments.ts";
 import { teamRoutes } from "./teams.ts";
 import { typingRoutes } from "./typing.ts";
 import { offlineMessageRoutes } from "./offlineMessages.ts";
+import { cannedResponseRoutes } from "./cannedResponses.ts";
 
 const v1Routes = new Hono();
 
@@ -28,5 +29,6 @@ v1Routes.route("/attachments", attachmentRoutes);
 v1Routes.route("/teams", teamRoutes);
 v1Routes.route("/conversations/:id/typing", typingRoutes);
 v1Routes.route("/offline-messages", offlineMessageRoutes);
+v1Routes.route("/canned-responses", cannedResponseRoutes);
 
 export { v1Routes };
