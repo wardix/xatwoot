@@ -72,26 +72,35 @@ export async function listConversations(
     inbox_id?: number;
     status?: Conversation["status"];
     assignee_id?: number;
+    label?: string;
     limit?: number;
     offset?: number;
   }
 ): Promise<{ data: Conversation[]; total: number }> {
-  const { inbox_id, status, assignee_id, limit = 20, offset = 0 } = opts;
+  const { inbox_id, status, assignee_id, label, limit = 20, offset = 0 } = opts;
 
-  const whereClauses: string[] = ["account_id = $1"];
+  const whereClauses: string[] = ["c.account_id = $1"];
   const values: unknown[] = [account_id];
   let idx = 2;
 
+  let joinSql = "";
+  if (label !== undefined && label.trim() !== "") {
+    joinSql = ` JOIN conversation_labels cl ON cl.conversation_id = c.id
+                JOIN labels l ON l.id = cl.label_id`;
+    whereClauses.push(`l.name = $${idx++}`);
+    values.push(label.trim());
+  }
+
   if (inbox_id !== undefined) {
-    whereClauses.push(`inbox_id = $${idx++}`);
+    whereClauses.push(`c.inbox_id = $${idx++}`);
     values.push(inbox_id);
   }
   if (status !== undefined) {
-    whereClauses.push(`status = $${idx++}`);
+    whereClauses.push(`c.status = $${idx++}`);
     values.push(status);
   }
   if (assignee_id !== undefined) {
-    whereClauses.push(`assignee_id = $${idx++}`);
+    whereClauses.push(`c.assignee_id = $${idx++}`);
     values.push(assignee_id);
   }
 
@@ -102,10 +111,10 @@ export async function listConversations(
 
   const [rows, countRows] = await Promise.all([
     db.unsafe(
-      `SELECT * FROM conversations WHERE ${whereSql} ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`,
+      `SELECT c.* FROM conversations c${joinSql} WHERE ${whereSql} ORDER BY c.created_at DESC LIMIT $${idx++} OFFSET $${idx++}`,
       values
     ),
-    db.unsafe(`SELECT COUNT(*)::int AS total FROM conversations WHERE ${whereSql}`, countValues),
+    db.unsafe(`SELECT COUNT(DISTINCT c.id)::int AS total FROM conversations c${joinSql} WHERE ${whereSql}`, countValues),
   ]);
 
   return {
