@@ -110,6 +110,28 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_conversations_assignee ON conversations(assignee_id)`);
   console.log("✅ conversations table ready");
 
+  // messages table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id BIGSERIAL PRIMARY KEY,
+      conversation_id BIGINT REFERENCES conversations(id) ON DELETE CASCADE,
+      sender_type VARCHAR(10) CHECK (sender_type IN ('user', 'contact')),
+      sender_id BIGINT,
+      body TEXT,
+      message_type VARCHAR(10) DEFAULT 'text' CHECK (message_type IN ('text', 'image', 'file', 'audio')),
+      status VARCHAR(10) DEFAULT 'sent' CHECK (status IN ('sending', 'sent', 'delivered', 'read')),
+      private BOOLEAN DEFAULT false,
+      media_url TEXT,
+      external_id VARCHAR(255) UNIQUE,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at)`);
+  console.log("✅ messages table ready");
+
   console.log("✅ All migrations completed");
   await db.end?.();
 }
