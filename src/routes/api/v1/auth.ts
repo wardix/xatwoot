@@ -94,9 +94,76 @@ authRoutes.get("/me", authMiddleware, (c) => {
   return c.json(safeUser(user));
 });
 
-// POST /api/v1/auth/logout — stateless JWT, just acknowledge
-authRoutes.post("/logout", (c) => {
-  return c.json({ message: "Logged out successfully" }, 200);
+// POST /api/v1/auth/sso/google — Handle Google OAuth / SSO callback
+authRoutes.post("/sso/google", async (c) => {
+  let body: any;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const email = body.email;
+  const name = body.name ?? email;
+  const uid = body.uid ?? body.google_id ?? `g_${Date.now()}`;
+
+  if (!email) {
+    return c.json({ error: "Validation Failed", details: { email: ["Email is required for Google SSO"] } }, 422);
+  }
+
+  const { findOrCreateSSOUser } = await import("@/db/queries/ssoQueries.ts");
+  const user = await findOrCreateSSOUser({
+    email,
+    name,
+    provider: "google",
+    uid,
+    accountId: body.account_id ? Number(body.account_id) : undefined,
+  });
+
+  const token = signToken({
+    userId: user.id,
+    accountId: user.account_id,
+    email: user.email,
+    role: user.role,
+  });
+
+  return c.json({ token, user: safeUser(user) }, 200);
+});
+
+// POST /api/v1/auth/sso/saml — Handle SAML enterprise authentication
+authRoutes.post("/sso/saml", async (c) => {
+  let body: any;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const email = body.email;
+  const name = body.name ?? email;
+  const uid = body.saml_name_id ?? body.uid ?? `saml_${Date.now()}`;
+
+  if (!email) {
+    return c.json({ error: "Validation Failed", details: { email: ["Email is required for SAML SSO"] } }, 422);
+  }
+
+  const { findOrCreateSSOUser } = await import("@/db/queries/ssoQueries.ts");
+  const user = await findOrCreateSSOUser({
+    email,
+    name,
+    provider: "saml",
+    uid,
+    accountId: body.account_id ? Number(body.account_id) : undefined,
+  });
+
+  const token = signToken({
+    userId: user.id,
+    accountId: user.account_id,
+    email: user.email,
+    role: user.role,
+  });
+
+  return c.json({ token, user: safeUser(user) }, 200);
 });
 
 export { authRoutes };
