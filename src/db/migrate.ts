@@ -295,7 +295,28 @@ async function migrate() {
     )
   `);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role_id)`);
-  console.log("✅ roles & role_permissions tables ready");
+  // Enable pgvector if available
+  try {
+    await db.unsafe(`CREATE EXTENSION IF NOT EXISTS vector`);
+  } catch {
+    console.log("ℹ️ pgvector extension not available, falling back to JSONB text embeddings");
+  }
+
+  // knowledge_base_articles table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS knowledge_base_articles (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      category VARCHAR(100) DEFAULT 'General',
+      content TEXT NOT NULL,
+      keywords TEXT[] DEFAULT '{}',
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_kb_articles_account ON knowledge_base_articles(account_id)`);
+  console.log("✅ knowledge_base_articles table ready");
 
   console.log("✅ All migrations completed");
   await db.end?.();
