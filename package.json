@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
+    "build:widget": "vite build --config vite.config.widget.ts",
     "test": "bun test",
     "migrate": "bun run src/db/migrate.ts",
     "seed": "bun run src/db/seed.ts"
