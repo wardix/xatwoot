@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { useWebSocket } from "../hooks/useWebSocket.ts";
+import { TypingIndicator } from "./TypingIndicator.tsx";
 
 export interface ChatWidgetProps {
   token: string;
@@ -20,6 +21,9 @@ export function ChatWidget({
   const [messages, setMessages] = useState<Array<{ id?: number; body: string; sender_type: string }>>([]);
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState<number | null>(null);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTypingRef = useRef(false);
 
   const { isConnected, sendMessage } = useWebSocket({
     token,
@@ -27,6 +31,12 @@ export function ChatWidget({
     onMessage: (event, data) => {
       if (event === "message.created" && data?.body) {
         setMessages((prev) => [...prev, { id: data.id, body: String(data.body), sender_type: String(data.sender_type) }]);
+      } else if (event === "typing_start" && data?.user_id) {
+        const name = String(data.user_id);
+        setTypingUsers((prev) => prev.includes(name) ? prev : [...prev, name]);
+      } else if (event === "typing_stop" && data?.user_id) {
+        const name = String(data.user_id);
+        setTypingUsers((prev) => prev.filter((u) => u !== name));
       }
     },
   });
@@ -60,9 +70,51 @@ export function ChatWidget({
     }
   };
 
+  const sendTypingEvent = useCallback(
+    async (action: "start" | "stop", convId: number) => {
+      try {
+        await fetch(`${apiHost}/api/v1/conversations/${convId}/typing`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action }),
+        });
+      } catch {
+        // Typing event is best-effort
+      }
+    },
+    [apiHost, token]
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.currentTarget.value);
+    if (!conversationId) return;
+
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      sendTypingEvent("start", conversationId);
+    }
+
+    // Reset the stop-typing debounce timer
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      isTypingRef.current = false;
+      if (conversationId) sendTypingEvent("stop", conversationId);
+    }, 2000);
+  };
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !conversationId) return;
+
+    // Stop typing indicator immediately on send
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      sendTypingEvent("stop", conversationId);
+    }
 
     const bodyText = input;
     setInput("");
@@ -151,12 +203,15 @@ export function ChatWidget({
             ))}
           </div>
 
+          {/* Typing indicator */}
+          <TypingIndicator typingUsers={typingUsers} />
+
           {/* Input form */}
           <form onSubmit={handleSend} style={{ display: "flex", padding: "8px", borderTop: "1px solid #eee" }}>
             <input
               type="text"
               value={input}
-              onChange={(e) => setInput((e.target as HTMLInputElement).value)}
+              onChange={handleInputChange}
               placeholder="Type your message..."
               style={{
                 flex: 1,

@@ -9,6 +9,7 @@ import { labelRoutes } from "./labels.ts";
 import { widgetRoutes } from "./widget.ts";
 import { attachmentRoutes } from "./attachments.ts";
 import { teamRoutes } from "./teams.ts";
+import { typingRoutes } from "./typing.ts";
 
 const v1Routes = new Hono();
 
@@ -24,5 +25,6 @@ v1Routes.route("/messages", messageRoutes);
 v1Routes.route("/labels", labelRoutes);
 v1Routes.route("/attachments", attachmentRoutes);
 v1Routes.route("/teams", teamRoutes);
+v1Routes.route("/conversations/:id/typing", typingRoutes);
 
 export { v1Routes };

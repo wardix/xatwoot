@@ -4,6 +4,9 @@ import {
   subscribeAccount,
   unsubscribeAccount,
   getAccountConnectionCount,
+  setTyping,
+  getTypingUsers,
+  clearTypingForUser,
   type WSMessage,
 } from "../../src/lib/websocket.ts";
 
@@ -73,5 +76,43 @@ describe("WebSocket Account Broadcasting Manager", () => {
 
     unsubscribeAccount(1, wsAcc1);
     unsubscribeAccount(2, wsAcc2);
+  });
+});
+
+describe("Typing Indicator State Manager", () => {
+  it("records a user as typing in a conversation", () => {
+    setTyping(501, 1, true);
+    const typists = getTypingUsers(501);
+    expect(typists).toContain(1);
+  });
+
+  it("removes a user from typing when they stop", () => {
+    setTyping(502, 2, true);
+    expect(getTypingUsers(502)).toContain(2);
+    setTyping(502, 2, false);
+    expect(getTypingUsers(502)).not.toContain(2);
+  });
+
+  it("tracks multiple users typing in the same conversation", () => {
+    setTyping(503, 10, true);
+    setTyping(503, 11, true);
+    const typists = getTypingUsers(503);
+    expect(typists).toContain(10);
+    expect(typists).toContain(11);
+    expect(typists.length).toBe(2);
+  });
+
+  it("clears a user from all conversations via clearTypingForUser", () => {
+    setTyping(601, 99, true);
+    setTyping(602, 99, true);
+    clearTypingForUser(99);
+    expect(getTypingUsers(601)).not.toContain(99);
+    expect(getTypingUsers(602)).not.toContain(99);
+  });
+
+  it("does not mix typing state across different conversations", () => {
+    setTyping(701, 5, true);
+    expect(getTypingUsers(702)).not.toContain(5);
+    setTyping(701, 5, false);
   });
 });
