@@ -1,10 +1,10 @@
 import React from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore.ts";
 
 export function AppLayout() {
-  const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -13,71 +13,46 @@ export function AppLayout() {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", backgroundColor: "#f9fafb" }}>
+    <div style={{ display: "flex", height: "100vh" }}>
       {/* Sidebar */}
-      <aside
-        style={{
-          width: "240px",
-          backgroundColor: "#1f2937",
-          color: "#ffffff",
-          display: "flex",
-          flexDirection: "column",
-          fontFamily: "sans-serif",
-        }}
-      >
-        <div style={{ padding: "20px", fontSize: "18px", fontWeight: "bold", borderBottom: "1px solid #374151" }}>
-          💬 Xatwoot
-        </div>
-        <nav style={{ flex: 1, padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <Link
+      <aside className="app-sidebar">
+        <div className="app-sidebar__brand">💬 Xatwoot</div>
+        <nav className="app-sidebar__nav">
+          <NavLink
+            to="/inbox"
+            className={({ isActive }) => `nav-link${isActive ? " nav-link--active" : ""}`}
+          >
+            📥 Agent Inbox
+          </NavLink>
+          <NavLink
             to="/dashboard"
-            style={navLinkStyle}
+            className={({ isActive }) => `nav-link${isActive ? " nav-link--active" : ""}`}
           >
             📊 Dashboard
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/settings"
-            style={navLinkStyle}
+            className={({ isActive }) => `nav-link${isActive ? " nav-link--active" : ""}`}
           >
             ⚙️ Settings
-          </Link>
+          </NavLink>
         </nav>
-        <div style={{ padding: "16px", borderTop: "1px solid #374151", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div style={{ fontSize: "13px", color: "#9ca3af" }}>
-            {user?.email}
+        <div className="app-sidebar__footer">
+          <div className="app-sidebar__user-email" title={user?.email}>
+            {user?.name ?? user?.email ?? "Agent"}
           </div>
-          <button
-            onClick={handleLogout}
-            style={{
-              backgroundColor: "#dc2626",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "6px",
-              padding: "8px 12px",
-              fontSize: "13px",
-              cursor: "pointer",
-            }}
-          >
-            Logout
+          <button className="btn-logout" onClick={handleLogout}>
+            ← Logout
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, overflowY: "auto" }}>
+      {/* Main Content — offset by sidebar width */}
+      <main style={{ flex: 1, marginLeft: "220px", overflow: "hidden" }}>
         <Outlet />
       </main>
     </div>
   );
 }
-
-const navLinkStyle: React.CSSProperties = {
-  color: "#e5e7eb",
-  textDecoration: "none",
-  padding: "10px 12px",
-  borderRadius: "6px",
-  fontSize: "14px",
-  fontWeight: 500,
-};
 
 export default AppLayout;

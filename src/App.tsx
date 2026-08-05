@@ -6,6 +6,8 @@ import { AppLayout } from "./components/AppLayout.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
 import { DashboardPage } from "./pages/DashboardPage.tsx";
 import { SettingsPage } from "./pages/SettingsPage.tsx";
+import { AgentInboxPage } from "./pages/AgentInboxPage.tsx";
+import "./inbox.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +44,7 @@ export function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="inbox" element={<AgentInboxPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
