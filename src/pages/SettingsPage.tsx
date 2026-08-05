@@ -6,6 +6,7 @@ import { AppIntegrationsSettings } from "../components/AppIntegrationsSettings.t
 import { RolesPermissionsSettings } from "../components/RolesPermissionsSettings.tsx";
 import { LanguageSelector } from "../components/LanguageSelector.tsx";
 import { KnowledgeBaseSettings } from "../components/KnowledgeBaseSettings.tsx";
+import { SLASettings } from "../components/SLASettings.tsx";
 
 export function SettingsPage() {
   const token = useAuthStore((state) => state.token);
@@ -20,6 +21,7 @@ export function SettingsPage() {
       {token && user?.account_id ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
           <LanguageSelector />
+          <SLASettings />
           <KnowledgeBaseSettings />
           <AccountBrandingSettings
             accountId={user.account_id}
