@@ -16,6 +16,7 @@ import { auditLogRoutes } from "./auditLogs.ts";
 import { analyticsRoutes } from "./analytics.ts";
 import { gdprRoutes } from "./gdpr.ts";
 import { webhookRoutes } from "./webhooks.ts";
+import { aiRoutes } from "./ai.ts";
 import { auditLoggerMiddleware } from "@/middleware/auditLogger.ts";
 
 const v1Routes = new Hono();
@@ -41,5 +42,6 @@ v1Routes.route("/audit-logs", auditLogRoutes);
 v1Routes.route("/analytics", analyticsRoutes);
 v1Routes.route("/gdpr", gdprRoutes);
 v1Routes.route("/webhooks", webhookRoutes);
+v1Routes.route("/conversations", aiRoutes);
 
 export { v1Routes };
