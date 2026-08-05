@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
@@ -26,7 +26,8 @@
       "@/routes/*": ["src/routes/*"],
       "@/lib/*": ["src/lib/*"],
       "@/middleware/*": ["src/middleware/*"],
-      "@/hooks/*": ["src/hooks/*"]
+      "@/hooks/*": ["src/hooks/*"],
+      "@/components/*": ["src/components/*"]
     }
   },
   "include": ["src/**/*", "tests/**/*", "index.ts"]
