@@ -86,6 +86,30 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_contacts_email_trgm ON contacts USING gin (email gin_trgm_ops)`);
   console.log("✅ contacts table ready");
 
+  // conversations table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS conversations (
+      id BIGSERIAL PRIMARY KEY,
+      display_id BIGINT NOT NULL,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      inbox_id BIGINT REFERENCES inboxes(id),
+      contact_id BIGINT REFERENCES contacts(id),
+      assignee_id BIGINT REFERENCES users(id),
+      status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open', 'pending', 'resolved', 'snoozed')),
+      priority VARCHAR(10) DEFAULT 'normal' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+      waiting_since TIMESTAMP,
+      last_activity_at TIMESTAMP,
+      subject TEXT,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(account_id, display_id)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_conversations_account ON conversations(account_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_conversations_status ON conversations(status)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_conversations_assignee ON conversations(assignee_id)`);
+  console.log("✅ conversations table ready");
+
   console.log("✅ All migrations completed");
   await db.end?.();
 }
