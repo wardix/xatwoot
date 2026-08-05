@@ -88,6 +88,25 @@ export function CrmPanel() {
           </button>
         </div>
       </section>
+
+      {/* Customer Journey Timeline */}
+      <section className="crm-section">
+        <h4 className="crm-section__title">Customer Journey Timeline</h4>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "12px" }}>
+          <div style={{ padding: "6px 8px", backgroundColor: "#f3f4f6", borderRadius: "4px" }}>
+            <span style={{ fontWeight: 600, color: "#3b82f6" }}>PAGE_VIEW</span>
+            <div style={{ color: "#6b7280", fontSize: "11px" }}>/pricing</div>
+          </div>
+          <div style={{ padding: "6px 8px", backgroundColor: "#f3f4f6", borderRadius: "4px" }}>
+            <span style={{ fontWeight: 600, color: "#10b981" }}>ADD_TO_CART</span>
+            <div style={{ color: "#6b7280", fontSize: "11px" }}>Plan: Pro Enterprise</div>
+          </div>
+          <div style={{ padding: "6px 8px", backgroundColor: "#f3f4f6", borderRadius: "4px" }}>
+            <span style={{ fontWeight: 600, color: "#ef4444" }}>ERROR_ENCOUNTERED</span>
+            <div style={{ color: "#6b7280", fontSize: "11px" }}>Payment Gateway Timeout</div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
