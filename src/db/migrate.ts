@@ -130,6 +130,7 @@ async function migrate() {
   `);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id)`);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_messages_body_trgm ON messages USING gin (body gin_trgm_ops)`);
   console.log("✅ messages table ready");
 
   // labels table
