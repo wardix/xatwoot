@@ -121,6 +121,29 @@ export function ChatArea() {
     );
   }
 
+  const [isSuggesting, setIsSuggesting] = useState(false);
+
+  const handleSuggestReply = async () => {
+    if (!selectedId || !token) return;
+    setIsSuggesting(true);
+    try {
+      const res = await fetch(`${API_HOST}/api/v1/conversations/${selectedId}/suggest-reply`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.suggestion) {
+          setInput(data.suggestion);
+        }
+      }
+    } catch {
+      /* suggest failed */
+    } finally {
+      setIsSuggesting(false);
+    }
+  };
+
   return (
     <div className="chat-area">
       {/* Header */}
@@ -160,9 +183,12 @@ export function ChatArea() {
           storeMessages.map((msg, idx) => (
             <div
               key={msg.id ?? idx}
-              className={`message message--${msg.sender_type === "user" ? "agent" : "contact"}`}
+              className={`message message--${msg.sender_type === "user" ? "agent" : msg.sender_type === "bot" ? "bot" : "contact"}`}
             >
-              <div className="message__bubble">{msg.body}</div>
+              <div className="message__bubble">
+                {msg.sender_type === "bot" && <span className="message__bot-tag">🤖 Bot</span>}
+                {msg.body}
+              </div>
               {msg.created_at && (
                 <div className="message__time">
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -177,6 +203,15 @@ export function ChatArea() {
 
       {/* Input */}
       <form className="chat-area__input-bar" onSubmit={handleSend}>
+        <button
+          type="button"
+          className="chat-area__ai-btn"
+          onClick={handleSuggestReply}
+          disabled={isSuggesting}
+          title="Generate AI reply suggestion"
+        >
+          {isSuggesting ? "✨ Thinking..." : "✨ Suggest Reply"}
+        </button>
         <input
           className="chat-area__input"
           type="text"
