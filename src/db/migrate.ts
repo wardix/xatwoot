@@ -225,6 +225,22 @@ async function migrate() {
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_canned_responses_account ON canned_responses(account_id)`);
   console.log("✅ canned_responses table ready");
 
+  // audit_logs table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      action VARCHAR(255) NOT NULL,
+      metadata JSONB DEFAULT '{}',
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_audit_logs_account ON audit_logs(account_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action)`);
+  console.log("✅ audit_logs table ready");
+
   console.log("✅ All migrations completed");
   await db.end?.();
 }
