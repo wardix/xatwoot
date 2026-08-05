@@ -19,6 +19,7 @@ import { webhookRoutes } from "./webhooks.ts";
 import { aiRoutes } from "./ai.ts";
 import { pushRoutes } from "./push.ts";
 import { automationRoutes } from "./automation.ts";
+import { integrationRoutes } from "./integrations.ts";
 import { auditLoggerMiddleware } from "@/middleware/auditLogger.ts";
 
 const v1Routes = new Hono();
@@ -47,5 +48,6 @@ v1Routes.route("/webhooks", webhookRoutes);
 v1Routes.route("/conversations", aiRoutes);
 v1Routes.route("/push", pushRoutes);
 v1Routes.route("/automation", automationRoutes);
+v1Routes.route("/integrations", integrationRoutes);
 
 export { v1Routes };
