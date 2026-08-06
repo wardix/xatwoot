@@ -4,111 +4,100 @@ export interface Label {
   id: number;
   account_id: number;
   name: string;
-  color: string | null;
-  created_at: Date;
-  updated_at: Date;
+  color?: string;
+  created_at?: string;
 }
 
-export interface CreateLabelInput {
-  account_id: number;
+/**
+ * createLabel — VS-CRM-002
+ */
+export async function createLabel(params: {
+  accountId: number;
   name: string;
   color?: string;
-}
-
-export async function createLabel(input: CreateLabelInput): Promise<Label> {
-  const { account_id, name, color = "#1f93ff" } = input;
+}): Promise<Label> {
   const rows = await db.unsafe(
     `INSERT INTO labels (account_id, name, color)
      VALUES ($1, $2, $3)
-     RETURNING *`,
-    [account_id, name, color]
+     ON CONFLICT (account_id, name) DO UPDATE SET color = EXCLUDED.color
+     RETURNING id, account_id, name, color, created_at`,
+    [params.accountId, params.name, params.color ?? "#3b82f6"]
   );
-  return rows[0] as Label;
+  return rows[0] as any;
 }
 
-export async function findLabelByName(name: string, account_id: number): Promise<Label | null> {
+/**
+ * listAccountLabels — VS-CRM-002
+ */
+export async function listAccountLabels(accountId: number): Promise<Label[]> {
   const rows = await db.unsafe(
-    `SELECT * FROM labels WHERE name = $1 AND account_id = $2 LIMIT 1`,
-    [name, account_id]
+    `SELECT id, account_id, name, color, created_at
+     FROM labels
+     WHERE account_id = $1
+     ORDER BY name ASC`,
+    [accountId]
   );
-  return (rows[0] as Label) ?? null;
+  return rows as any;
 }
 
-export async function findLabelById(id: number, account_id: number): Promise<Label | null> {
+/**
+ * attachLabelToConversation — VS-CRM-002
+ */
+export async function attachLabelToConversation(conversationId: number, labelId: number): Promise<void> {
+  await db.unsafe(
+    `INSERT INTO conversation_labels (conversation_id, label_id)
+     VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+    [conversationId, labelId]
+  );
+}
+
+/**
+ * removeLabelFromConversation — VS-CRM-002
+ */
+export async function removeLabelFromConversation(conversationId: number, labelId: number): Promise<void> {
+  await db.unsafe(
+    `DELETE FROM conversation_labels WHERE conversation_id = $1 AND label_id = $2`,
+    [conversationId, labelId]
+  );
+}
+
+/**
+ * listConversationLabels — VS-CRM-002
+ */
+export async function listConversationLabels(conversationId: number): Promise<Label[]> {
   const rows = await db.unsafe(
-    `SELECT * FROM labels WHERE id = $1 AND account_id = $2 LIMIT 1`,
-    [id, account_id]
+    `SELECT l.id, l.account_id, l.name, l.color
+     FROM labels l
+     JOIN conversation_labels cl ON cl.label_id = l.id
+     WHERE cl.conversation_id = $1`,
+    [conversationId]
   );
-  return (rows[0] as Label) ?? null;
+  return rows as any;
 }
 
-export async function listLabelsByAccount(
-  account_id: number,
-  limit = 50,
-  offset = 0
-): Promise<{ data: Label[]; total: number }> {
-  const [rows, countRows] = await Promise.all([
-    db.unsafe(`SELECT * FROM labels WHERE account_id = $1 ORDER BY name ASC LIMIT $2 OFFSET $3`, [
-      account_id,
-      limit,
-      offset,
-    ]),
-    db.unsafe(`SELECT COUNT(*)::int AS total FROM labels WHERE account_id = $1`, [account_id]),
-  ]);
-  return {
-    data: rows as Label[],
-    total: (countRows[0] as { total: number }).total,
-  };
-}
-
-export async function assignLabelsToConversation(
-  conversation_id: number,
-  labelNames: string[],
-  account_id: number
-): Promise<Label[]> {
-  for (const name of labelNames) {
-    let label = await findLabelByName(name, account_id);
-    if (!label) {
-      label = await createLabel({ account_id, name });
-    }
-    await db.unsafe(
-      `INSERT INTO conversation_labels (conversation_id, label_id)
-       VALUES ($1, $2)
-       ON CONFLICT (conversation_id, label_id) DO NOTHING`,
-      [conversation_id, label.id]
-    );
+/**
+ * updateConversationCustomAttributes — VS-CRM-002
+ */
+export async function updateConversationCustomAttributes(
+  conversationId: number,
+  accountId: number,
+  attributes: Record<string, any>
+): Promise<Record<string, any>> {
+  const convId = Number(conversationId);
+  const accId = Number(accountId);
+  await db.unsafe(
+    `UPDATE conversations
+     SET custom_attributes = COALESCE(custom_attributes, '{}'::jsonb) || $3::jsonb
+     WHERE id = $1 AND account_id = $2`,
+    [convId, accId, JSON.stringify(attributes)]
+  );
+  const rows = await db.unsafe(
+    `SELECT custom_attributes FROM conversations WHERE id = $1 AND account_id = $2`,
+    [convId, accId]
+  );
+  let raw = rows[0]?.custom_attributes;
+  if (Array.isArray(raw)) {
+    raw = raw.find((item) => typeof item === "string" && item !== "{}") ?? raw[raw.length - 1];
   }
-  return listConversationLabels(conversation_id, account_id);
-}
-
-export async function listConversationLabels(
-  conversation_id: number,
-  account_id: number
-): Promise<Label[]> {
-  const rows = await db.unsafe(
-    `SELECT l.* FROM labels l
-     JOIN conversation_labels cl ON l.id = cl.label_id
-     WHERE cl.conversation_id = $1 AND l.account_id = $2
-     ORDER BY l.name ASC`,
-    [conversation_id, account_id]
-  );
-  return rows as Label[];
-}
-
-export async function removeLabelFromConversation(
-  conversation_id: number,
-  label_id: number,
-  account_id: number
-): Promise<boolean> {
-  const rows = await db.unsafe(
-    `DELETE FROM conversation_labels cl
-     USING labels l
-     WHERE cl.label_id = l.id
-       AND cl.conversation_id = $1
-       AND cl.label_id = $2
-       AND l.account_id = $3
-     RETURNING cl.label_id`,
-    [conversation_id, label_id, account_id]
-  );
-  return rows.length > 0;
+  return typeof raw === "string" ? JSON.parse(raw) : (raw ?? {});
 }
