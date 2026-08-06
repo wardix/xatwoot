@@ -56,7 +56,7 @@ async function migrate() {
       id BIGSERIAL PRIMARY KEY,
       account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
       name VARCHAR(255) NOT NULL,
-      channel_type VARCHAR(50) CHECK (channel_type IN ('web_widget','email','whatsapp','facebook','telegram')),
+      channel_type VARCHAR(50) CHECK (channel_type IN ('web_widget','email','whatsapp','meta_whatsapp','instagram','facebook','telegram')),
       integration_config JSONB DEFAULT '{}',
       enabled BOOLEAN DEFAULT true,
       greeting_enabled BOOLEAN DEFAULT false,

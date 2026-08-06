@@ -7,6 +7,7 @@ import { RolesPermissionsSettings } from "../components/RolesPermissionsSettings
 import { LanguageSelector } from "../components/LanguageSelector.tsx";
 import { KnowledgeBaseSettings } from "../components/KnowledgeBaseSettings.tsx";
 import { SLASettings } from "../components/SLASettings.tsx";
+import { MetaOmnichannelSettings } from "../components/MetaOmnichannelSettings.tsx";
 
 export function SettingsPage() {
   const token = useAuthStore((state) => state.token);
@@ -21,6 +22,7 @@ export function SettingsPage() {
       {token && user?.account_id ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
           <LanguageSelector />
+          <MetaOmnichannelSettings />
           <SLASettings />
           <KnowledgeBaseSettings />
           <AccountBrandingSettings
