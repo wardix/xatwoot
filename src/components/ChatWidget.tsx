@@ -198,7 +198,40 @@ export function ChatWidget({
                   fontSize: "14px",
                 }}
               >
-                {m.body}
+                <div>{m.body}</div>
+                {/* Render interactive 1-5 star CSAT rating prompt */}
+                {m.body.includes("rate your support experience") && (
+                  <div style={{ marginTop: "8px", display: "flex", gap: "4px" }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={async () => {
+                          if (!conversationId) return;
+                          try {
+                            await fetch(`${apiHost}/api/v1/conversations/${conversationId}/csat`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                              body: JSON.stringify({ rating: star }),
+                            });
+                            alert(`Thank you for rating us ${star} star(s)!`);
+                          } catch {
+                            /* error */
+                          }
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "18px",
+                          padding: "2px",
+                        }}
+                      >
+                        ⭐
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
