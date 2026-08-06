@@ -26,12 +26,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import { HelpCenterPage } from "./pages/HelpCenterPage.tsx";
+
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/helpcenter/:accountId?" element={<HelpCenterPage />} />
 
           <Route
             path="/"
