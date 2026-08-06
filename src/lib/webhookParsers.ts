@@ -46,18 +46,28 @@ export function parseMetaPayload(raw: Record<string, any>): IncomingMessage | nu
     const messaging = entry?.messaging?.[0] ?? entry?.changes?.[0]?.value?.messages?.[0];
     if (!messaging) return null;
 
-    const senderId: string = messaging?.sender?.id ?? messaging?.from?.id ?? "";
+    // Support WhatsApp Cloud API, Instagram DM, and Messenger
+    const senderId: string =
+      messaging?.sender?.id ??
+      messaging?.from ??
+      messaging?.from?.id ??
+      "";
+
     const text: string =
       messaging?.message?.text ??
       messaging?.text?.body ??
+      messaging?.caption ??
       "";
+
     const msgId: string = messaging?.message?.mid ?? messaging?.id ?? "";
 
     if (!senderId || !text) return null;
 
+    const contacts = entry?.changes?.[0]?.value?.contacts?.[0];
+
     return {
       senderId,
-      senderName: senderId,
+      senderName: contacts?.profile?.name ?? senderId,
       body: text,
       platformMessageId: msgId,
     };
@@ -123,5 +133,49 @@ export async function sendMetaReply(recipientId: string, body: string): Promise<
     });
   } catch (err) {
     console.error("[webhook] Meta reply failed:", err);
+  }
+}
+
+/**
+ * sendWhatsAppCloudReply — sends outbound WhatsApp message via Meta Cloud API
+ */
+export async function sendWhatsAppCloudReply(phoneId: string, accessToken: string, recipientPhone: string, body: string): Promise<void> {
+  try {
+    await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to: recipientPhone,
+        type: "text",
+        text: { body },
+      }),
+    });
+  } catch (err) {
+    console.error("[webhook] WhatsApp Cloud API reply failed:", err);
+  }
+}
+
+/**
+ * sendInstagramReply — sends outbound Instagram DM reply via Meta Graph API
+ */
+export async function sendInstagramReply(pageId: string, accessToken: string, recipientId: string, body: string): Promise<void> {
+  try {
+    await fetch(`https://graph.facebook.com/v19.0/${pageId}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        recipient: { id: recipientId },
+        message: { text: body },
+      }),
+    });
+  } catch (err) {
+    console.error("[webhook] Instagram Direct reply failed:", err);
   }
 }
