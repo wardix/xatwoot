@@ -128,8 +128,58 @@ conversationRoutes.put(
       return c.json({ error: "Not Found", message: "Conversation not found" }, 404);
     }
 
+    // Trigger CSAT Survey survey message when conversation is resolved — VS-ANALYTICS-002
+    if (body.status === "resolved") {
+      const { insertBotReply } = await import("@/db/queries/aiQueries.ts");
+      await insertBotReply({
+        accountId,
+        conversationId: id,
+        body: "🌟 How would you rate your support experience today? (1-5 Stars)",
+      });
+    }
+
     return c.json(conversation);
   }
 );
+
+/**
+ * POST /api/v1/conversations/:id/csat — Submit CSAT Survey rating and comment
+ */
+conversationRoutes.post("/:id/csat", async (c) => {
+  const accountId = c.get("accountId");
+  const conversationId = Number(c.req.param("id"));
+
+  let body: any;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const rating = Number(body.rating);
+  if (isNaN(rating) || rating < 1 || rating > 5) {
+    return c.json({ error: "Rating must be an integer between 1 and 5" }, 422);
+  }
+
+  const { submitCSATSurvey } = await import("@/db/queries/csatQueries.ts");
+  const survey = await submitCSATSurvey({
+    accountId,
+    conversationId,
+    rating,
+    comment: body.comment,
+  });
+
+  return c.json(survey, 201);
+});
+
+/**
+ * GET /api/v1/conversations/csat/summary — Retrieve CSAT analytics summary
+ */
+conversationRoutes.get("/csat/summary", async (c) => {
+  const accountId = c.get("accountId");
+  const { getCSATSummary } = await import("@/db/queries/csatQueries.ts");
+  const summary = await getCSATSummary(accountId);
+  return c.json(summary, 200);
+});
 
 export { conversationRoutes };

@@ -346,7 +346,22 @@ async function migrate() {
     )
   `);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_sla_policies_account ON sla_policies(account_id)`);
-  console.log("✅ sla_policies table ready");
+  // csat_surveys table
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS csat_surveys (
+      id BIGSERIAL PRIMARY KEY,
+      account_id BIGINT REFERENCES accounts(id) ON DELETE CASCADE,
+      conversation_id BIGINT REFERENCES conversations(id) ON DELETE CASCADE,
+      agent_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      rating INT CHECK (rating >= 1 AND rating <= 5),
+      comment TEXT,
+      created_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(conversation_id)
+    )
+  `);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_csat_surveys_account ON csat_surveys(account_id)`);
+  await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_csat_surveys_agent ON csat_surveys(agent_id)`);
+  console.log("✅ csat_surveys table ready");
 
   console.log("✅ All migrations completed");
   await db.end?.();
