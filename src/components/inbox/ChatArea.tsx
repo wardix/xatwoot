@@ -91,6 +91,8 @@ export function ChatArea() {
     }, 2000);
   };
 
+  const [isPrivate, setIsPrivate] = useState(false);
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !selectedId || !token) return;
@@ -103,7 +105,7 @@ export function ChatArea() {
       const res = await fetch(`${API_HOST}/api/v1/conversations/${selectedId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ body, sender_type: "user", sender_id: user?.id }),
+        body: JSON.stringify({ body, sender_type: "user", sender_id: user?.id, private: isPrivate }),
       });
       if (res.ok) {
         const msg = await res.json();
@@ -193,9 +195,10 @@ export function ChatArea() {
           storeMessages.map((msg, idx) => (
             <div
               key={msg.id ?? idx}
-              className={`message message--${msg.sender_type === "user" ? "agent" : msg.sender_type === "bot" ? "bot" : "contact"}`}
+              className={`message ${msg.private ? "message--private" : `message--${msg.sender_type === "user" ? "agent" : msg.sender_type === "bot" ? "bot" : "contact"}`}`}
             >
               <div className="message__bubble">
+                {msg.private && <span className="message__private-tag">🔒 Private Note</span>}
                 {msg.sender_type === "bot" && <span className="message__bot-tag">🤖 Bot</span>}
                 {msg.body}
               </div>
@@ -215,6 +218,23 @@ export function ChatArea() {
       <form className="chat-area__input-bar" onSubmit={handleSend}>
         <button
           type="button"
+          onClick={() => setIsPrivate(!isPrivate)}
+          style={{
+            backgroundColor: isPrivate ? "#fef08a" : "#e5e7eb",
+            color: isPrivate ? "#854d0e" : "#374151",
+            border: isPrivate ? "1px solid #fde047" : "none",
+            borderRadius: "6px",
+            padding: "8px 12px",
+            fontSize: "12px",
+            fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {isPrivate ? "🔒 Private Note" : "💬 Reply"}
+        </button>
+        <button
+          type="button"
           className="chat-area__ai-btn"
           onClick={handleSuggestReply}
           disabled={isSuggesting}
@@ -227,11 +247,11 @@ export function ChatArea() {
           type="text"
           value={input}
           onChange={handleInputChange}
-          placeholder="Type your reply…"
+          placeholder={isPrivate ? "Add a private note (type @agent to mention)..." : "Type your reply…"}
           autoComplete="off"
         />
         <button className="chat-area__send-btn" type="submit" disabled={!input.trim()}>
-          Send ↑
+          {isPrivate ? "Add Note" : "Send ↑"}
         </button>
       </form>
     </div>

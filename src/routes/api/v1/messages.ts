@@ -71,7 +71,14 @@ messageRoutes.post(
       conversation_id: targetConvId,
       sender_type,
       sender_id,
+      private: body.private ?? false,
     });
+
+    // Parse @mentions in private notes for push/email notification trigger — VS-PRODUCTIVITY-001
+    const mentions = body.body.match(/@([a-zA-Z0-9._-]+)/g);
+    if (mentions && body.private) {
+      console.log(`[private-note] Mentioned agents: ${mentions.join(", ")} in conversation #${targetConvId}`);
+    }
 
     let attachmentsList: any[] = [];
     if (attachmentsInput && attachmentsInput.length > 0) {
