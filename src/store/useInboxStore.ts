@@ -31,6 +31,7 @@ export interface Message {
   body: string;
   sender_type: "user" | "contact" | "bot";
   sender_id: number;
+  private?: boolean;
   created_at?: string;
   conversation_id?: number;
 }
