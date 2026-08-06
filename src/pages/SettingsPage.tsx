@@ -9,6 +9,7 @@ import { KnowledgeBaseSettings } from "../components/KnowledgeBaseSettings.tsx";
 import { SLASettings } from "../components/SLASettings.tsx";
 import { MetaOmnichannelSettings } from "../components/MetaOmnichannelSettings.tsx";
 import { CannedResponsesSettings } from "../components/CannedResponsesSettings.tsx";
+import { EmailChannelSettings } from "../components/EmailChannelSettings.tsx";
 
 export function SettingsPage() {
   const token = useAuthStore((state) => state.token);
@@ -23,6 +24,7 @@ export function SettingsPage() {
       {token && user?.account_id ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
           <LanguageSelector />
+          <EmailChannelSettings />
           <CannedResponsesSettings />
           <MetaOmnichannelSettings />
           <SLASettings />
