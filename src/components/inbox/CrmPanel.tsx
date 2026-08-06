@@ -56,6 +56,39 @@ export function CrmPanel() {
         </dl>
       </section>
 
+      {/* Conversation Labels (VS-CRM-002) */}
+      <section className="crm-section">
+        <h4 className="crm-section__title">Labels</h4>
+        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
+          <span style={{ backgroundColor: "#3b82f6", color: "#fff", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600 }}>
+            VIP Support
+          </span>
+          <span style={{ backgroundColor: "#10b981", color: "#fff", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600 }}>
+            Billing
+          </span>
+        </div>
+        <button
+          onClick={async () => {
+            const name = prompt("Enter new label name:");
+            if (name) alert(`Added label: ${name}`);
+          }}
+          style={{ background: "none", border: "1px dashed #d1d5db", borderRadius: "4px", padding: "4px 8px", fontSize: "11px", color: "#6b7280", cursor: "pointer" }}
+        >
+          + Add Label
+        </button>
+      </section>
+
+      {/* Custom Attributes (VS-CRM-002) */}
+      <section className="crm-section">
+        <h4 className="crm-section__title">Custom Attributes</h4>
+        <dl className="crm-dl">
+          <dt>Subscription Tier</dt>
+          <dd>Enterprise Pro</dd>
+          <dt>Order ID</dt>
+          <dd>#ORD-998241</dd>
+        </dl>
+      </section>
+
       {/* Actions */}
       <section className="crm-section">
         <h4 className="crm-section__title">Quick Actions</h4>

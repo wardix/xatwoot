@@ -361,7 +361,10 @@ async function migrate() {
   `);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_csat_surveys_account ON csat_surveys(account_id)`);
   await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_csat_surveys_agent ON csat_surveys(agent_id)`);
-  console.log("✅ csat_surveys table ready");
+  // Add custom_attributes to contacts and conversations if missing
+  await db.unsafe(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS custom_attributes JSONB DEFAULT '{}'`);
+  await db.unsafe(`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS custom_attributes JSONB DEFAULT '{}'`);
+  console.log("✅ custom_attributes columns ready");
 
   console.log("✅ All migrations completed");
   await db.end?.();
