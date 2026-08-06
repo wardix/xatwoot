@@ -242,14 +242,59 @@ export function ChatArea() {
         >
           {isSuggesting ? "✨ Thinking..." : "✨ Suggest Reply"}
         </button>
-        <input
-          className="chat-area__input"
-          type="text"
-          value={input}
-          onChange={handleInputChange}
-          placeholder={isPrivate ? "Add a private note (type @agent to mention)..." : "Type your reply…"}
-          autoComplete="off"
-        />
+        <div style={{ flex: 1, position: "relative" }}>
+          {input.startsWith("/") && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: "100%",
+                left: 0,
+                right: 0,
+                backgroundColor: "#ffffff",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+                boxShadow: "0 -4px 12px rgba(0,0,0,0.1)",
+                maxHeight: "160px",
+                overflowY: "auto",
+                zIndex: 10,
+                marginBottom: "4px",
+              }}
+            >
+              {[
+                { shortcut: "/refund", content: "We offer a 30-day full money-back guarantee. Please provide your order ID." },
+                { shortcut: "/hours", content: "Our customer support team is available Mon-Fri, 9am - 5pm EST." },
+                { shortcut: "/pricing", content: "Check out our pricing tiers at https://xatwoot.com/pricing" },
+              ]
+                .filter((c) => c.shortcut.toLowerCase().includes(input.toLowerCase()))
+                .map((item) => (
+                  <div
+                    key={item.shortcut}
+                    onClick={() => setInput(item.content)}
+                    style={{
+                      padding: "8px 12px",
+                      cursor: "pointer",
+                      borderBottom: "1px solid #f3f4f6",
+                      fontSize: "13px",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#eff6ff")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    <span style={{ fontWeight: 700, color: "#2563eb", marginRight: "8px" }}>{item.shortcut}</span>
+                    <span style={{ color: "#4b5563" }}>{item.content}</span>
+                  </div>
+                ))}
+            </div>
+          )}
+          <input
+            className="chat-area__input"
+            type="text"
+            value={input}
+            onChange={handleInputChange}
+            placeholder={isPrivate ? "Add a private note (type @agent to mention)..." : "Type / for quick replies or your reply…"}
+            autoComplete="off"
+            style={{ width: "100%" }}
+          />
+        </div>
         <button className="chat-area__send-btn" type="submit" disabled={!input.trim()}>
           {isPrivate ? "Add Note" : "Send ↑"}
         </button>
